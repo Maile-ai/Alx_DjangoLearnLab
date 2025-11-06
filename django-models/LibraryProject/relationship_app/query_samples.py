@@ -17,11 +17,19 @@ author_name = "J.K. Rowling"
 
 try:
     author = Author.objects.get(name=author_name)
-    # Explicit filter query
+
+    # Explicit query using filter()
     books_by_author = Book.objects.filter(author=author)
 
-    print(f"\nBooks by {author.name}:")
+    # Also demonstrate reverse relationship (requires related_name="books" in Book model)
+    related_books = author.books.all()
+
+    print(f"\nBooks by {author.name} (using filter):")
     for book in books_by_author:
+        print(f" - {book.title}")
+
+    print(f"\nBooks by {author.name} (using related_name .books.all()):")
+    for book in related_books:
         print(f" - {book.title}")
 
 except Author.DoesNotExist:
@@ -35,16 +43,24 @@ library_name = "City Central Library"
 
 try:
     library = Library.objects.get(name=library_name)
+
     # Explicit filter query
     books_in_library = Book.objects.filter(library=library)
 
-    print(f"\nBooks in {library.name}:")
+    # Reverse relation example (.books.all()) requires related_name="books"
+    related_books_in_library = library.books.all()
+
+    print(f"\nBooks in {library.name} (using filter):")
     for book in books_in_library:
+        print(f" - {book.title} by {book.author.name}")
+
+    print(f"\nBooks in {library.name} (using .books.all()):")
+    for book in related_books_in_library:
         print(f" - {book.title} by {book.author.name}")
 
 except Library.DoesNotExist:
     print(f"No library found with name '{library_name}'.")
-    library = None  # prevent NameError later
+    library = None
 
 
 # -------------------------------
@@ -52,7 +68,7 @@ except Library.DoesNotExist:
 # -------------------------------
 if library:
     try:
-        # Explicit get query
+        # Explicit query using get()
         librarian = Librarian.objects.get(library=library)
         print(f"\nLibrarian for {library.name}: {librarian.name}")
     except Librarian.DoesNotExist:
