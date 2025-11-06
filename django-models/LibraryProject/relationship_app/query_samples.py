@@ -17,11 +17,17 @@ author_name = "J.K. Rowling"
 
 try:
     author = Author.objects.get(name=author_name)
-    # Forward relationship: Author → Book
-    books_by_author = author.book_set.all()
+
+    # Using explicit filter (the requirement)
+    books_by_author = Book.objects.filter(author=author)
+
+    # Alternatively (reverse relationship)
+    # books_by_author = author.books.all()   # works if related_name="books"
+
     print(f"\nBooks by {author.name}:")
     for book in books_by_author:
         print(f" - {book.title}")
+
 except Author.DoesNotExist:
     print(f"No author found with name '{author_name}'.")
 
@@ -33,14 +39,16 @@ library_name = "City Central Library"
 
 try:
     library = Library.objects.get(name=library_name)
-    # Reverse relationship: Library → Book (via related_name or default: book_set)
-    books_in_library = library.book_set.all()  # You could also use .books.all() if defined in model
+
+    # Using reverse relation (related_name='books' recommended)
+    books_in_library = library.books.all()
     print(f"\nBooks in {library.name}:")
     for book in books_in_library:
         print(f" - {book.title} by {book.author.name}")
+
 except Library.DoesNotExist:
     print(f"No library found with name '{library_name}'.")
-    library = None  # avoid NameError later
+    library = None
 
 
 # -------------------------------
@@ -48,7 +56,7 @@ except Library.DoesNotExist:
 # -------------------------------
 if library:
     try:
-        librarian = library.librarian  # Reverse OneToOneField access
+        librarian = library.librarian  # reverse OneToOneField access
         print(f"\nLibrarian for {library.name}: {librarian.name}")
     except Librarian.DoesNotExist:
         print(f"No librarian found for {library.name}.")
