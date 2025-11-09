@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import user_passes_test
 from .models import UserProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
-from django.shortcuts import render
 from .models import Book
 
 
@@ -86,3 +85,24 @@ def role_redirect_view(request):
         return redirect('librarian_view')
     else:
         return redirect('member_view')
+
+
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book_view(request):
+    return render(request, 'relationship_app/add_book.html', {
+        'message': 'You have permission to add new books.'
+    })
+
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book_view(request):
+    return render(request, 'relationship_app/edit_book.html', {
+        'message': 'You have permission to edit existing books.'
+    })
+
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book_view(request):
+    return render(request, 'relationship_app/delete_book.html', {
+        'message': 'You have permission to delete books.'
+    })
