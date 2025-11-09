@@ -19,4 +19,10 @@ urlpatterns = [
     path('member_view/', views.member_view, name='member_view'),
 
     path('role_redirect/', views.role_redirect_view, name='role_redirect'),
+
+    path('add_book/', views.add_book_view, name='add_book'),
+    
+    path('edit_book/', views.edit_book_view, name='edit_book'),
+    
+    path('delete_book/', views.delete_book_view, name='delete_book'),
 ]

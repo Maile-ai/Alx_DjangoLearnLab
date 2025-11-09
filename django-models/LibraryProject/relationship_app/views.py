@@ -6,6 +6,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import user_passes_test
 from .models import UserProfile
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+from django.shortcuts import render
+from .models import Book
 
 
 # Function-based view
