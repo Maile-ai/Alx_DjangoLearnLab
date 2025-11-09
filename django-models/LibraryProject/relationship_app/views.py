@@ -3,6 +3,9 @@ from django.views.generic.detail import DetailView
 from .models import Library
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import user_passes_test
+from .models import UserProfile
+from django.contrib.auth.decorators import login_required
 
 
 # Function-based view
@@ -37,12 +40,46 @@ def logout_view(request):
 
 
 # User Registration View
-def register_view(request):
-    if request.method == "POST":
+def register(request):
+    if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            return redirect('login')  # or redirect to 'home' if you have one
     else:
         form = UserCreationForm()
     return render(request, 'relationship_app/register.html', {'form': form})
+
+def is_admin(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
+
+def is_librarian(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Librarian'
+
+def is_member(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
+
+@user_passes_test(is_admin)
+def admin_view(request):
+    return render(request, 'relationship_app/admin_view.html')
+
+@user_passes_test(is_librarian)
+def librarian_view(request):
+    return render(request, 'relationship_app/librarian_view.html')
+
+@user_passes_test(is_member)
+def member_view(request):
+    return render(request, 'relationship_app/member_view.html')
+
+
+
+@login_required
+def role_redirect_view(request):
+    profile = request.user.userprofile
+    if profile.role == 'Admin':
+        return redirect('admin_view')
+    elif profile.role == 'Librarian':
+        return redirect('librarian_view')
+    else:
+        return redirect('member_view')
