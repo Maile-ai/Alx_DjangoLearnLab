@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from .models import Book
-from .forms import BookForm, ExampleForm
-
+from .forms import ExampleForm, BookForm
 @login_required
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
