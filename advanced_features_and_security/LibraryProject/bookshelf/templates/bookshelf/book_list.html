@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Books</title>
+</head>
+<body>
+    <h1>Bookshelf</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Year</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for book in books %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.publication_year }}</td>
+            <td>
+                <a href="{% url 'edit_book' book.pk %}">Edit</a> |
+                <a href="{% url 'delete_book' book.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No books found.</td></tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="{% url 'create_book' %}">Add a New Book</a>
+</body>
+</html>
