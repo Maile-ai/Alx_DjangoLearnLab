@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth.models import User
-from .models import Book
+from .models import Book, Author
 from .serializers import BookSerializer
 
 
@@ -15,21 +15,25 @@ class BookAPITests(APITestCase):
         )
         self.client.login(username="tester", password="testpass123")
 
+        self.author = Author.objects.create(
+            name="Test Author"
+        )
+
         self.book1 = Book.objects.create(
             title="Python Basics",
-            author=self.user,
+            author=self.author,
             publication_year=2020
         )
         self.book2 = Book.objects.create(
             title="Advanced Django",
-            author=self.user,
+            author=self.author,
             publication_year=2021
         )
 
     def test_list_books(self):
         url = reverse("book-list")
         response = self.client.get(url)
-        books = Book.objects.all()
+        books = Book.objects.order_by("title")
         serializer = BookSerializer(books, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
@@ -45,7 +49,7 @@ class BookAPITests(APITestCase):
         url = reverse("book-create")
         payload = {
             "title": "New Test Book",
-            "author": self.user.id,
+            "author": self.author.id,
             "publication_year": 2023
         }
         response = self.client.post(url, payload, format="json")
@@ -57,7 +61,7 @@ class BookAPITests(APITestCase):
         url = reverse("book-update", args=[self.book1.id])
         payload = {
             "title": "Updated Title",
-            "author": self.user.id,
+            "author": self.author.id,
             "publication_year": 2020
         }
         response = self.client.put(url, payload, format="json")
