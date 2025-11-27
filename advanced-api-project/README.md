@@ -13,14 +13,21 @@
 - Public: List & Detail
 - Authenticated Only: Create, Update, Delete
 
+## Filtering, Searching & Ordering
+
 ### Filtering Examples
-/books/?title=Python  
-/books/?author=1  
+/books/?title=Python
+/books/?author=1
 /books/?publication_year=2023
 
-### Search Examples
+### Searching Examples
 /books/?search=django
 
 ### Ordering Examples
-/books/?ordering=title  
+/books/?ordering=title
 /books/?ordering=-publication_year
+
+### Implementation Notes
+Filtering uses DjangoFilterBackend.
+Searching uses DRF SearchFilter.
+Ordering uses DRF OrderingFilter.
