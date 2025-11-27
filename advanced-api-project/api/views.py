@@ -8,9 +8,25 @@ from .serializers import BookSerializer
 class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]  # Public access
+    permission_classes = [permissions.AllowAny]
 
+    # Filtering, searching, ordering
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
 
+    # Filtering by fields
+    filterset_fields = ["title", "author", "publication_year"]
+
+    # Searching
+    search_fields = ["title", "author__name"]
+
+    # Ordering
+    ordering_fields = ["title", "publication_year"]
+    ordering = ["title"]
+    
 # Read-only single book view
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
