@@ -1,4 +1,7 @@
 {% extends "blog/base.html" %}
+
+{% block title %}Login{% endblock %}
+
 {% block content %}
 <h2>Login</h2>
 
@@ -7,4 +10,9 @@
     {{ form.as_p }}
     <button type="submit">Login</button>
 </form>
+
+<p>No account yet?  
+   <a href="{% url 'blog:register' %}">Register</a>
+</p>
+
 {% endblock %}
