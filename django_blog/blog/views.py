@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .forms import CustomUserCreationForm, UserUpdateForm
-from .models import Profile
 
 def register_view(request):
     if request.method == "POST":
@@ -14,7 +13,7 @@ def register_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
-            return redirect("blog:profile")
+            return redirect("profile")   # FIXED
         else:
             messages.error(request, "Fix the errors below.")
     else:
@@ -28,7 +27,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect("blog:profile")
+            return redirect("profile")   # FIXED
         else:
             messages.error(request, "Invalid credentials.")
     else:
@@ -38,7 +37,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return render(request, "blog/logout.html")
+    return redirect("login")   # FIXED
 
 
 @login_required
@@ -49,7 +48,7 @@ def profile_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated.")
-            return redirect("blog:profile")
+            return redirect("profile")  # FIXED
         else:
             messages.error(request, "Please fix the errors.")
     else:
