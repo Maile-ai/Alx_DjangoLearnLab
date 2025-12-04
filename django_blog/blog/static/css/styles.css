@@ -43,3 +43,10 @@ footer {
     background-color: #333;
     color: white;
 }
+/* styles for Django messages */
+.messages { max-width: 900px; margin: 1rem auto; padding: 0 1rem; }
+.message { padding: 0.6rem 0.9rem; border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.95rem; }
+.message.info { background: #e6f0ff; color: #064e8a; border: 1px solid rgba(6,78,138,0.08); }
+.message.success { background: #e6ffef; color: #056a3a; border: 1px solid rgba(5,106,58,0.08); }
+.message.warning { background: #fff7e6; color: #7a5c00; border: 1px solid rgba(122,92,0,0.08); }
+.message.error { background: #ffe6e6; color: #8a0606; border: 1px solid rgba(138,6,6,0.08); }
