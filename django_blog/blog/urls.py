@@ -10,15 +10,21 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
 
-    # Posts CRUD
+    # BLOG POSTS CRUD
     path("posts/", views.PostListView.as_view(), name="posts"),
-    path("posts/new/", views.PostCreateView.as_view(), name="post-create"),
-    path("posts/<int:pk>/", views.PostDetailView.as_view(), name="post-detail"),
-    path("posts/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post-update"),
-    path("posts/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post-delete"),
+    path("post/new/", views.PostCreateView.as_view(), name="post-create"),
+    path("post/<int:pk>/", views.PostDetailView.as_view(), name="post-detail"),
+    path("post/<int:pk>/update/", views.PostUpdateView.as_view(), name="post-update"),
+    path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post-delete"),
 
-    # Comments CRUD (ALX-required URL structure)
+    # COMMENTS CRUD (Task 3)
     path("post/<int:pk>/comments/new/", views.comment_create, name="comment-create"),
     path("comment/<int:pk>/update/", views.CommentUpdateView.as_view(), name="comment-update"),
     path("comment/<int:pk>/delete/", views.CommentDeleteView.as_view(), name="comment-delete"),
+
+    # TAG FILTER (Task 4)
+    path("tags/<str:tag_name>/", views.posts_by_tag, name="posts-by-tag"),
+
+    # SEARCH (Task 4)
+    path("search/", views.post_search, name="post-search"),
 ]
