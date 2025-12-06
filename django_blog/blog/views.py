@@ -7,18 +7,24 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView, DeleteView
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy, reverse
+from django.db.models import Q
 
 from .forms import CustomUserCreationForm, UserUpdateForm, PostForm, CommentForm
-from .models import Profile, Post, Comment
+from .models import Profile, Post, Comment, Tag
 
 
 # ---------------------------
 # AUTHENTICATION VIEWS
 # ---------------------------
+
 
 def register_view(request):
     if request.method == "POST":
@@ -77,12 +83,37 @@ def profile_view(request):
 
 
 # ---------------------------
+# TAG HANDLING MIXIN
+# ---------------------------
+
+
+class TagHandlingMixin:
+    """
+    Mixin to parse the `tags` field from PostForm (comma-separated string)
+    and sync it with the Post.tags many-to-many field.
+    """
+
+    def _save_tags(self, form):
+        tags_str = form.cleaned_data.get("tags", "") or ""
+        tag_names = [t.strip() for t in tags_str.split(",") if t.strip()]
+
+        tags = []
+        for name in tag_names:
+            tag, _ = Tag.objects.get_or_create(name=name)
+            tags.append(tag)
+
+        # self.object is the saved Post instance
+        self.object.tags.set(tags)
+
+
+# ---------------------------
 # BLOG POSTS CRUD
 # ---------------------------
 
+
 class PostListView(ListView):
     model = Post
-    template_name = "blog/post_list.html"
+    template_name = "blog/post_list.html"  # REQUIRED by tests
     context_object_name = "posts"
     ordering = ["-created_at"]
 
@@ -94,12 +125,12 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["comments"] = Comment.objects.filter(post=self.object)
+        # empty form for the "Add comment" section
         context["comment_form"] = CommentForm()
         return context
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(TagHandlingMixin, LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "blog/post_form.html"
@@ -107,14 +138,16 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        response = super().form_valid(form)
+        self._save_tags(form)
         messages.success(self.request, "Post created.")
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse("post-detail", kwargs={"pk": self.object.pk})
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PostUpdateView(TagHandlingMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = "blog/post_form.html"
@@ -123,9 +156,19 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         return self.get_object().author == self.request.user
 
+    def get_initial(self):
+        initial = super().get_initial()
+        # pre-fill tags as comma-separated string
+        initial["tags"] = ", ".join(
+            self.object.tags.values_list("name", flat=True)
+        )
+        return initial
+
     def form_valid(self, form):
+        response = super().form_valid(form)
+        self._save_tags(form)
         messages.success(self.request, "Updated")
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse("post-detail", kwargs={"pk": self.object.pk})
@@ -139,94 +182,101 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.get_object().author == self.request.user
-# ----------------------------------
-# COMMENTS CRUD VIEWS
-# ----------------------------------
-
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = "blog/comment_form.html"
-
-    def form_valid(self, form):
-        post = get_object_or_404(Post, pk=self.kwargs["post_id"])
-        form.instance.author = self.request.user
-        form.instance.post = post
-        messages.success(self.request, "Comment added.")
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse("post-detail", kwargs={"pk": self.kwargs["post_id"]})
-
-
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = "blog/comment_form.html"
-
-    def test_func(self):
-        return self.get_object().author == self.request.user
-
-    def form_valid(self, form):
-        messages.success(self.request, "Comment updated.")
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse("post-detail", kwargs={"pk": self.object.post.pk})
-
-
-class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Comment
-    template_name = "blog/comment_confirm_delete.html"
-
-    def test_func(self):
-        return self.get_object().author == self.request.user
-
-    def get_success_url(self):
-        messages.success(self.request, "Comment deleted.")
-        return reverse("post-detail", kwargs={"pk": self.get_object().post.pk})
 
 
 # ---------------------------
 # COMMENTS CRUD
 # ---------------------------
 
+
 @login_required
-def comment_create_view(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
+def comment_create(request, pk):
+    """Create a comment on a given post, then redirect back to the post."""
+    post = get_object_or_404(Post, pk=pk)
 
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.author = request.user
             comment.post = post
+            comment.author = request.user
             comment.save()
             messages.success(request, "Comment added.")
         else:
-            messages.error(request, "Unable to add comment.")
+            messages.error(request, "Please fix the errors in your comment.")
 
-    return redirect("post-detail", pk=post.id)
+    return redirect("post-detail", pk=post.pk)
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Comment
     form_class = CommentForm
     template_name = "blog/comment_form.html"
+    login_url = "login"
 
     def test_func(self):
         return self.get_object().author == self.request.user
 
     def get_success_url(self):
         return reverse("post-detail", kwargs={"pk": self.object.post.pk})
+
+    def get_context_data(self, **kwargs):
+        # so that your template can use {{ comment }} like you wrote
+        context = super().get_context_data(**kwargs)
+        context["comment"] = self.object
+        return context
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
     template_name = "blog/comment_confirm_delete.html"
+    login_url = "login"
 
     def test_func(self):
         return self.get_object().author == self.request.user
 
     def get_success_url(self):
         return reverse("post-detail", kwargs={"pk": self.object.post.pk})
+
+
+# ---------------------------
+# TAG FILTER VIEW
+# ---------------------------
+
+
+def posts_by_tag(request, tag_name):
+    """Show all posts that have a given tag."""
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = tag.posts.all()
+    return render(
+        request,
+        "blog/post_list.html",
+        {"posts": posts, "active_tag": tag},
+    )
+
+
+# ---------------------------
+# SEARCH VIEW
+# ---------------------------
+
+
+def post_search(request):
+    """
+    Search posts by title, content, or tag name.
+    Query param: ?q=...
+    """
+    query = request.GET.get("q", "").strip()
+    posts = Post.objects.all()
+
+    if query:
+        posts = posts.filter(
+            Q(title__icontains=query)
+            | Q(content__icontains=query)
+            | Q(tags__name__icontains=query)
+        ).distinct()
+
+    return render(
+        request,
+        "blog/search_results.html",
+        {"query": query, "posts": posts},
+    )
