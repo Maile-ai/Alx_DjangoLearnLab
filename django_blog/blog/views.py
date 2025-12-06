@@ -18,8 +18,7 @@ from django.urls import reverse_lazy, reverse
 from django.db.models import Q
 
 from .forms import CustomUserCreationForm, UserUpdateForm, PostForm, CommentForm
-from .models import Profile, Post, Comment, Tag
-
+from .models import Profile, Post, Comment
 
 # ---------------------------
 # AUTHENTICATION VIEWS

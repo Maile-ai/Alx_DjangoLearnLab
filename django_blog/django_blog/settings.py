@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 
     # local app
     'blog',
+    'taggit',
 ]
 
 MIDDLEWARE = [
