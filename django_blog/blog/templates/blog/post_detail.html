@@ -14,7 +14,7 @@
     <hr>
     <h2>Comments</h2>
 
-    {% if post.comments.all %}
+    {% if post.comments.exists %}
         {% for comment in post.comments.all %}
             <div class="comment-box">
                 <p>{{ comment.content }}</p>
@@ -32,6 +32,8 @@
         {% empty %}
             <p>No comments yet.</p>
         {% endfor %}
+    {% else %}
+        <p>No comments yet.</p>
     {% endif %}
 
     <!-- ---------------------- -->
