@@ -27,4 +27,5 @@ urlpatterns = [
 
     # SEARCH (Task 4)
     path("search/", views.post_search, name="post-search"),
+    path("search/", views.search_view, name="search"),
 ]

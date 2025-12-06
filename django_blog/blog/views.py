@@ -19,6 +19,7 @@ from django.db.models import Q
 
 from .forms import CustomUserCreationForm, UserUpdateForm, PostForm, CommentForm
 from .models import Profile, Post, Comment
+from django.db.models import Q
 
 # ---------------------------
 # AUTHENTICATION VIEWS
@@ -103,6 +104,19 @@ class TagHandlingMixin:
 
         # self.object is the saved Post instance
         self.object.tags.set(tags)
+
+def search_view(request):
+    query = request.GET.get("q", "")
+    results = Post.objects.filter(  
+        Q(title__icontains=query) |
+        Q(content__icontains=query) |
+        Q(tags__name__icontains=query)
+    ).distinct()
+
+    return render(request, "blog/search_results.html", {
+        "query": query,
+        "results": results
+    })
 
 
 # ---------------------------
