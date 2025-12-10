@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 from .models import Post, Comment
 
@@ -20,6 +19,10 @@ class PostSerializer(serializers.ModelSerializer):
             "updated_at",
             "comments_count",
         ]
+
+    # FIX: Allow DRF to create posts
+    def create(self, validated_data):
+        return Post.objects.create(**validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
