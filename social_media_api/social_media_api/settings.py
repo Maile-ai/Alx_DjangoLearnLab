@@ -18,11 +18,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     "maile.pythonanywhere.com",
-    "www.maile.pythonanywhere.com",
-    "127.0.0.1",
-    "localhost",
 ]
-
 
 # ============================
 # APPLICATION DEFINITION
