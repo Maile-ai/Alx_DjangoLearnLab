@@ -27,11 +27,11 @@ class Notification(models.Model):
     target = GenericForeignKey("content_type", "object_id")
 
     read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-timestamp"]
 
     def __str__(self):
         return f"{self.actor} {self.verb} -> {self.recipient}"
-
