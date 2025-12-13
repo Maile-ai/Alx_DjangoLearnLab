@@ -7,6 +7,7 @@ from .views import (
     feed,
     like_post,
     unlike_post,
+    FeedView,
 )
 
 router = DefaultRouter()
@@ -17,7 +18,7 @@ urlpatterns = [
     path("", include(router.urls)),
 
     # Feed endpoint
-    path("feed/", feed, name="feed"),
+    path('feed/', FeedView.as_view(), name='feed'),
 
     # Like / Unlike endpoints
     path("posts/<int:pk>/like/", like_post, name="post-like"),
