@@ -11,6 +11,11 @@ urlpatterns = [
 
     # Posts & comments endpoints
     path("api/", include("posts.urls")),
+
+    # Notifications endpoints
+
+    path("api/notifications/", include("notifications.urls")),
+
 ]
 
 # Serve media files (profile pictures) in development mode

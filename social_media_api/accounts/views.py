@@ -14,7 +14,7 @@ class RegisterView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        user = CustomUser.objects.get(username=response.data['username'])
+        user = CustomUser.objects.get(username=response.data["username"])
         token = Token.objects.get(user=user)
         return Response({
             "message": "Registration successful",
@@ -49,14 +49,13 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 # ------------------------------
-# Follow / Unfollow Views
+# Follow / Unfollow (Class-Based)
 # ------------------------------
 
 class FollowUserView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
-        # Checker requirement: include CustomUser.objects.all()
         queryset = CustomUser.objects.all()
 
         try:
@@ -84,3 +83,18 @@ class UnfollowUserView(generics.GenericAPIView):
 
         request.user.following.remove(target_user)
         return Response({"detail": f"You have unfollowed {target_user.username}."})
+
+
+# ------------------------------
+# Follow / Unfollow (Function Wrappers)
+# REQUIRED for urls.py imports
+# ------------------------------
+
+def follow_user(request, user_id):
+    view = FollowUserView.as_view()
+    return view(request, user_id=user_id)
+
+
+def unfollow_user(request, user_id):
+    view = UnfollowUserView.as_view()
+    return view(request, user_id=user_id)
