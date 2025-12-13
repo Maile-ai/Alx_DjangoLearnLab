@@ -23,17 +23,12 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
-    def feed(self, request):
-        # REQUIRED BY CHECKER — DO NOT RENAME
-        following_users = request.user.following.all()
-
-        posts = Post.objects.filter(
-            author__in=following_users
-        ).order_by("-created_at")
-
-        serializer = self.get_serializer(posts, many=True)
-        return Response(serializer.data)
+@action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+def feed(self, request):
+    following_users = request.user.following.all()
+    posts = Post.objects.filter(author__in=following_users).order_by("-created_at")
+    serializer = self.get_serializer(posts, many=True)
+    return Response(serializer.data)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
