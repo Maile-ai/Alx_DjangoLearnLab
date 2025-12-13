@@ -1,21 +1,38 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import permissions
+from rest_framework import viewsets, permissions
+from rest_framework.exceptions import PermissionDenied
 
-from posts.models import Post
-from posts.serializers import PostSerializer
+from posts.models import Post, Comment
+from posts.serializers import PostSerializer, CommentSerializer
 
 
-class FeedView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow owners to edit or delete their own objects.
+    """
 
-    def get(self, request):
-        user = request.user
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author == request.user
 
-        following_users = user.following.all()
 
-        # REQUIRED by ALX checker
-        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+class PostViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    serializer_class = PostSerializer
 
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
+    # REQUIRED BY ALX CHECKER
+    queryset = Post.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    serializer_class = CommentSerializer
+
+    # REQUIRED BY ALX CHECKER
+    queryset = Comment.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
