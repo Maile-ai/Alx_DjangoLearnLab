@@ -110,11 +110,11 @@ USE_TZ = True
 
 
 # ============================
-# STATIC FILES (PythonAnywhere)
+# STATIC FILES
 # ============================
 
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = "/home/maile/Alx_DjangoLearnLab/social_media_api/staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
