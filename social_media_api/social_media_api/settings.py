@@ -160,3 +160,19 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 # ============================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ============================
+# SECURITY SETTINGS
+# ============================
+
+# Force HTTPS
+SECURE_SSL_REDIRECT = True
+
+# Prevent browser XSS attacks
+SECURE_BROWSER_XSS_FILTER = True
+
+# Prevent MIME-sniffing
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Prevent clickjacking
+X_FRAME_OPTIONS = "DENY"
